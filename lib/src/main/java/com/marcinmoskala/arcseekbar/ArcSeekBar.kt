@@ -40,6 +40,14 @@ class ArcSeekBar @JvmOverloads constructor(
             invalidate()
         }
 
+    var endProgress: Int = a.useOrDefault(0) { getInteger(R.styleable.ArcSeekBar_endProgress, it) }
+        set(progress) {
+            field = bound(0, progress, maxProgress)
+            onProgressChangedListener?.invoke(progress)
+            drawData?.let { drawData = it.copy(progress = progress) }
+            invalidate()
+        }
+
     var progressWidth: Float = a.useOrDefault(4 * context.resources.displayMetrics.density) { getDimension(R.styleable.ArcSeekBar_progressWidth, it) }
         set(value) {
             field = value
@@ -66,7 +74,11 @@ class ArcSeekBar @JvmOverloads constructor(
             invalidate()
         }
 
-    private val thumb: Drawable = a?.getDrawable(R.styleable.ArcSeekBar_thumb) ?: resources.getDrawable(R.drawable.thumb)
+    private val thumb: Drawable = a?.getDrawable(R.styleable.ArcSeekBar_thumb)
+            ?: resources.getDrawable(R.drawable.thumb)
+
+    private val thumbEnd: Drawable = a?.getDrawable(R.styleable.ArcSeekBar_thumb)
+            ?: resources.getDrawable(R.drawable.thumb)
 
     private var roundedEdges = a.useOrDefault(true) { getBoolean(R.styleable.ArcSeekBar_roundEdges, it) }
         set(value) {
@@ -110,11 +122,13 @@ class ArcSeekBar @JvmOverloads constructor(
             drawerDataObservers -= temp
         }
 
+
     override fun onDraw(canvas: Canvas) {
         drawData?.run {
             canvas.drawArc(arcRect, startAngle, sweepAngle, false, progressBackgroundPaint)
             canvas.drawArc(arcRect, startAngle, progressSweepAngle, false, progressPaint)
             if (mEnabled) drawThumb(canvas)
+            drawEndThumb(canvas)
         }
     }
 
@@ -125,6 +139,13 @@ class ArcSeekBar @JvmOverloads constructor(
         thumb.draw(canvas)
     }
 
+    private fun ArcSeekBarData.drawEndThumb(canvas: Canvas) {
+        val thumbHalfHeight = thumbEnd.intrinsicHeight / 2
+        val thumbHalfWidth = thumbEnd.intrinsicWidth / 2
+        thumbEnd.setBounds(thumbEndX - thumbHalfWidth, thumbEndY - thumbHalfHeight, thumbEndX + thumbHalfWidth, thumbEndY + thumbHalfHeight)
+        thumbEnd.draw(canvas)
+    }
+
     @SuppressLint("DrawAllocation")
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val height = View.getDefaultSize(suggestedMinimumHeight, heightMeasureSpec)
@@ -133,13 +154,13 @@ class ArcSeekBar @JvmOverloads constructor(
         val dy = maxOf(thumb.intrinsicHeight.toFloat() / 2, this.progressWidth) + 2
         val realWidth = width.toFloat() - 2 * dx - paddingLeft - paddingRight
         val realHeight = minOf(height.toFloat() - 2 * dy - paddingTop - paddingBottom, realWidth / 2)
-        drawData = ArcSeekBarData(dx + paddingLeft, dy + paddingTop, realWidth, realHeight, progress, maxProgress)
+        drawData = ArcSeekBarData(dx + paddingLeft, dy + paddingTop, realWidth, realHeight, progress, maxProgress, endProgress)
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (mEnabled) {
+        /*if (mEnabled) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     onStartTrackingTouch?.invoke(progress)
@@ -152,7 +173,8 @@ class ArcSeekBar @JvmOverloads constructor(
                 }
             }
         }
-        return mEnabled
+        return mEnabled*/
+        return false
     }
 
     override fun drawableStateChanged() {
@@ -187,7 +209,8 @@ class ArcSeekBar @JvmOverloads constructor(
     }
 
     private fun updateOnTouch(event: MotionEvent) {
-        val progressFromClick = drawData?.progressFromClick(event.x, event.y, thumb.intrinsicHeight) ?: return
+        val progressFromClick = drawData?.progressFromClick(event.x, event.y, thumb.intrinsicHeight)
+                ?: return
         isPressed = true
         progress = progressFromClick
     }

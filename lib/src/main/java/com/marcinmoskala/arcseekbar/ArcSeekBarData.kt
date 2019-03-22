@@ -8,7 +8,8 @@ internal data class ArcSeekBarData(
         val width: Float,
         val height: Float,
         val progress: Int,
-        val maxProgress: Int
+        val maxProgress: Int,
+        val endProgress: Int
 ) {
     private val pi = Math.PI.toFloat()
     private val zero = 0.0001F
@@ -19,10 +20,14 @@ internal data class ArcSeekBarData(
     val arcRect: RectF = RectF(circleCenterX - r, circleCenterY - r, circleCenterX + r, circleCenterY + r)
     val startAngle: Float = bound(180F, 270 - alphaRad / 2 / pi * 360F, 360F)
     val sweepAngle: Float = bound(zero, (2F * alphaRad) / 2 / pi * 360F, 180F)
-    val progressSweepRad = if(maxProgress == 0) zero else bound(zero, progress.toFloat() / maxProgress * 2 * alphaRad, 2 * pi)
+    val progressSweepRad = if (maxProgress == 0) zero else bound(zero, progress.toFloat() / maxProgress * 2 * alphaRad, 2 * pi)
+    val endProgressSweepRad = if (maxProgress == 0) zero else bound(zero, endProgress.toFloat() / maxProgress * 2 * alphaRad, 2 * pi)
     val progressSweepAngle: Float = progressSweepRad / 2 / pi * 360F
+    val endProgressSweepAngle: Float = endProgressSweepRad / 2 / pi * 360F
     val thumbX: Int = (r * Math.cos(alphaRad + Math.PI / 2 - progressSweepRad).toFloat() + circleCenterX).toInt()
+    val thumbEndX: Int = (r * Math.cos(alphaRad + Math.PI / 2 - endProgressSweepRad).toFloat() + circleCenterX).toInt()
     val thumbY: Int = (-r * Math.sin(alphaRad + Math.PI / 2 - progressSweepRad).toFloat() + circleCenterY).toInt()
+    val thumbEndY: Int = (-r * Math.sin(alphaRad + Math.PI / 2 - endProgressSweepRad).toFloat() + circleCenterY).toInt()
 
     fun progressFromClick(x: Float, y: Float, thumbHeight: Int): Int? {
         if (y > height + dy * 2) return null

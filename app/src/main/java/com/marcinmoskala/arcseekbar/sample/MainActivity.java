@@ -14,14 +14,5 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ArcSeekBar arcSeekBar = findViewById(R.id.seekArc);
-
-        arcSeekBar.setMaxProgress(200);
-        ProgressListener progressListener = progress -> Log.i("SeekBar", "Value is " + progress);
-        progressListener.invoke(0);
-        arcSeekBar.setOnProgressChangedListener(progressListener);
-
-        int[] intArray = getResources().getIntArray(R.array.progressGradientColors);
-        arcSeekBar.setProgressGradient(intArray);
     }
 }
